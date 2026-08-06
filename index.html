@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Weather Pro</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+    body { background: #0f172a; color: #f8fafc; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 15px; }
+    .app-container { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 20px; width: 100%; max-width: 420px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .top-bar { display: flex; gap: 8px; margin-bottom: 12px; }
+    input { flex: 1; padding: 12px; border-radius: 10px; border: none; background: #1e293b; color: #fff; outline: none; }
+    button { padding: 12px; border-radius: 10px; border: none; background: #38bdf8; color: #0f172a; font-weight: bold; cursor: pointer; }
+    .action-row { display: flex; gap: 8px; margin-bottom: 15px; }
+    .btn-sec { flex: 1; background: #334155; color: #fff; font-size: 13px; }
+    .weather-main { text-align: center; margin: 15px 0; }
+    .temp-large { font-size: 56px; font-weight: 800; }
+    .voice-btn { background: #8b5cf6; color: #fff; padding: 10px 18px; margin-top: 10px; border-radius: 10px; font-weight: bold; }
+    .grid-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
+    .stat-card { background: rgba(255, 255, 255, 0.05); padding: 12px; border-radius: 12px; text-align: center; }
+    .stat-card p { font-size: 11px; color: #94a3b8; }
+    .stat-card h4 { font-size: 15px; margin-top: 2px; }
+    .error { color: #f87171; text-align: center; display: none; margin: 10px 0; }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <div class="top-bar">
+      <input type="text" id="cityInput" placeholder="Search city...">
+      <button onclick="searchCity()">Search</button>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-sec" onclick="useGPS()">📍 GPS Location</button>
+      <button class="btn-sec" onclick="toggleUnit()">🌡️ °C / °F</button>
+    </div>
+
+    <div id="error" class="error">City not found!</div>
+
+    <div id="weatherContent">
+      <div class="weather-main">
+        <h2 id="cityName">Mumbai, IN</h2>
+        <img id="icon" src="https://openweathermap.org/img/wn/10d@2x.png" width="70">
+        <div class="temp-large" id="temp">28°C</div>
+        <p id="desc" style="color: #94a3b8; text-transform: capitalize;">Light Rain</p>
+        <button class="voice-btn" onclick="speakWeather()">🔊 Voice Report</button>
+      </div>
+
+      <div class="grid-stats">
+        <div class="stat-card"><p>AIR QUALITY</p><h4 id="aqi">1 - Good 🍃</h4></div>
+        <div class="stat-card"><p>FEELS LIKE</p><h4 id="feels">32°C</h4></div>
+        <div class="stat-card"><p>HUMIDITY</p><h4 id="humidity">80%</h4></div>
+        <div class="stat-card"><p>WIND</p><h4 id="wind">9.2 km/h</h4></div>
+      </div>
+
+      <div style="margin-top: 15px;">
+        <p style="font-size: 12px; color: #94a3b8; margin-bottom: 8px;">24-Hour Temp Graph</p>
+        <canvas id="tempChart" height="140"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_KEY = 'bd5e378503939ddaee76f12ad7a97608';
+    let currentCity = 'Mumbai';
+    let isMetric = true;
+    let chartInstance = null;
+
+    async function fetchWeather(city) {
+      try {
+        const unit = isMetric ? 'metric' : 'imperial';
+        const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=${unit}&appid=${API_KEY}`);
+        if(!res.ok) throw new Error();
+        const data = await res.json();
+
+        document.getElementById('cityName').innerText = `${data.name}, ${data.sys.country}`;
+        document.getElementById('temp').innerText = `${Math.round(data.main.temp)}°${isMetric ? 'C' : 'F'}`;
+        document.getElementById('feels').innerText = `${Math.round(data.main.feels_like)}°${isMetric ? 'C' : 'F'}`;
+        document.getElementById('desc').innerText = data.weather[0].description;
+        document.getElementById('humidity').innerText = `${data.main.humidity}%`;
+        document.getElementById('wind').innerText = `${data.wind.speed} ${isMetric ? 'km/h' : 'mph'}`;
+        document.getElementById('icon').src = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+        document.getElementById('error').style.display = 'none';
+
+        fetchForecast(city, unit);
+      } catch (err) {
+        document.getElementById('error').style.display = 'block';
+      }
+    }
+
+    async function fetchForecast(city, unit) {
+      try {
+        const res = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=${unit}&appid=${API_KEY}`);
+        const data = await res.json();
+        renderChart(data.list.slice(0, 8));
+      } catch(e) {}
+    }
+
+    function renderChart(hourlyData) {
+      if (typeof Chart === 'undefined') return;
+      const labels = hourlyData.map(i => new Date(i.dt * 1000).toLocaleTimeString([], { hour: '2-digit' }));
+      const temps = hourlyData.map(i => Math.round(i.main.temp));
+      const ctx = document.getElementById('tempChart').getContext('2d');
+
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{ data: temps, borderColor: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.2)', fill: true, tension: 0.3 }]
+        },
+        options: { plugins: { legend: { display: false } }, scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } } }
+      });
+    }
+
+    function speakWeather() {
+      if (!('speechSynthesis' in window)) {
+        alert("Browser does not support Voice feature!");
+        return;
+      }
+      window.speechSynthesis.cancel();
+      const text = `Currently in ${document.getElementById('cityName').innerText}, it is ${document.getElementById('temp').innerText} with ${document.getElementById('desc').innerText}.`;
+      const msg = new SpeechSynthesisUtterance(text);
+      msg.lang = 'en-US';
+      window.speechSynthesis.speak(msg);
+    }
+
+    function searchCity() {
+      const city = document.getElementById('cityInput').value.trim();
+      if(city) fetchWeather(city);
+    }
+
+    function toggleUnit() {
+      isMetric = !isMetric;
+      fetchWeather(currentCity);
+    }
+
+    function useGPS() {
+      if(navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&units=metric&appid=${API_KEY}`)
+            .then(r => r.json())
+            .then(d => fetchWeather(d.name));
+        });
+      }
+    }
+
+    fetchWeather('Mumbai');
+  </script>
+</body>
+</html>
