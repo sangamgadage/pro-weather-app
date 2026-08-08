@@ -1,397 +1,303 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Weather App</title>
-    <meta name="description" content="Sangam Weather App - Check live temperature, 24-hour graph, and 5-day forecast.">
-    <meta name="keywords" content="Sangam Weather, Pro Weather App Sangam, Live Weather Sangam">
-    <meta name="author" content="Sangam">
-<style>
-  body {
-    margin: 0;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-  .container {
-    width: 100%;
-    max-width: 450px;
-    margin: 0 auto;
-  }
-</style>
-
-
-    <!-- Chart.js for Graph -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- ResponsiveVoice for Voice Support on All Devices -->
-    <script src="https://code.responsivevoice.org/responsivevoice.js?key=FREE_KEY"></script>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #0f172a; color: #fff; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .card { background: #1e293b; width: 100%; max-width: 420px; border-radius: 20px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        .search-box { display: flex; gap: 10px; margin-bottom: 12px; }
-        input { flex: 1; padding: 12px; border-radius: 10px; border: none; background: #334155; color: #fff; outline: none; font-size: 14px; }
-        button { padding: 12px 16px; border-radius: 10px; border: none; background: #38bdf8; color: #0f172a; font-weight: bold; cursor: pointer; }
-        .controls { display: flex; gap: 10px; margin-bottom: 15px; }
-        .btn-sec { flex: 1; padding: 10px; background: #334155; color: #fff; border: none; border-radius: 10px; cursor: pointer; font-size: 13px; }
-        .error { color: #ef4444; text-align: center; font-weight: bold; display: none; margin-bottom: 10px; }
-        .weather-info { text-align: center; }
-        .temp { font-size: 52px; font-weight: bold; margin: 10px 0; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .box { background: #334155; padding: 12px; border-radius: 12px; text-align: center; }
-        .box p { font-size: 12px; color: #94a3b8; }
-        .box h4 { margin-top: 5px; font-size: 15px; }
-        .voice-btn { background: #a855f7; color: #fff; padding: 10px 20px; border-radius: 20px; border: none; margin: 10px 0; cursor: pointer; font-weight: bold; }
-        .recent-cities { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
-        .city-chip { background: #475569; padding: 5px 12px; border-radius: 15px; font-size: 12px; cursor: pointer; white-space: nowrap; }
-        .chart-box { margin-top: 20px; background: #334155; padding: 12px; border-radius: 12px; }
-        .forecast-box { margin-top: 15px; background: #334155; padding: 12px; border-radius: 12px; }
-        .forecast-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #475569; font-size: 13px; }
-        .forecast-item:last-child { border-bottom: none; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Weather App</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #0d1424;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px 10px;
+    }
+    .weather-card {
+      background: #192233;
+      border-radius: 20px;
+      padding: 20px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .search-box input {
+      flex: 1;
+      padding: 12px 15px;
+      border-radius: 10px;
+      border: none;
+      background: #25334d;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+    .search-box button {
+      padding: 12px 20px;
+      border-radius: 10px;
+      border: none;
+      background: #38bdf8;
+      color: #0d1424;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .quick-cities {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .city-badge {
+      background: #25334d;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .action-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .action-btn {
+      background: #25334d;
+      border: none;
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .main-weather {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+    .main-weather h2 {
+      font-size: 24px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .main-weather .temp {
+      font-size: 54px;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    .main-weather .desc {
+      color: #94a3b8;
+      font-size: 16px;
+      margin-bottom: 15px;
+    }
+    .voice-btn {
+      background: #a855f7;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+    .details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .detail-card {
+      background: #25334d;
+      padding: 15px;
+      border-radius: 12px;
+      text-align: center;
+    }
+    .detail-card span {
+      font-size: 11px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 5px;
+    }
+    .detail-card p {
+      font-size: 16px;
+      font-weight: bold;
+    }
+    .section-card {
+      background: #25334d;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    .section-title {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 10px;
+    }
+    .forecast-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #192233;
+      font-size: 14px;
+    }
+    .forecast-row:last-child {
+      border-bottom: none;
+    }
+  </style>
 </head>
 <body>
 
-<div class="card">
+  <div class="weather-card">
+    <!-- Search Bar -->
     <div class="search-box">
-        <input type="text" id="cityInput" placeholder="Search city...">
-        <button id="searchBtn">Search</button>
+      <input type="text" id="cityInput" placeholder="Search city...">
+      <button onclick="getWeatherByInput()">Search</button>
     </div>
 
-    <!-- Recent Search Chips -->
-    <div class="recent-cities" id="recentCities"></div>
-
-    <div class="controls">
-        <button class="btn-sec" id="gpsBtn">📍 GPS Location</button>
-        <button class="btn-sec" id="unitBtn">🌡️ °C / °F</button>
+    <!-- Quick Recent Cities -->
+    <div class="quick-cities" id="recentCities">
+      <span class="city-badge" onclick="fetchWeatherData('Pune')">Pune</span>
+      <span class="city-badge" onclick="fetchWeatherData('Mumbai')">Mumbai</span>
     </div>
 
-    <div class="error" id="errorMsg">City not found!</div>
-
-    <div class="weather-info">
-        <h2 id="cityName">Mumbai, IN</h2>
-        <div class="temp" id="tempVal">28°C</div>
-        <p id="weatherDesc">Light Rain</p>
-        <button class="voice-btn" id="voiceBtn">🔊 Voice Report</button>
+    <!-- Actions -->
+    <div class="action-row">
+      <button class="action-btn" onclick="getLocationWeather()">📍 GPS Location</button>
+      <button class="action-btn" onclick="toggleTempUnit()">🌡️ °C / °F</button>
     </div>
 
-    <div class="grid">
-        <div class="box"><p>AIR QUALITY</p><h4 id="aqiVal">1 - Good 🌿</h4></div>
-        <div class="box"><p>FEELS LIKE</p><h4 id="feelsVal">32°C</h4></div>
-        <div class="box"><p>HUMIDITY</p><h4 id="humidityVal">80%</h4></div>
-        <div class="box"><p>WIND</p><h4 id="windVal">9.2 km/h</h4></div>
+    <!-- Main Temp Info -->
+    <div class="main-weather">
+      <h2 id="cityName">Mumbai, IN</h2>
+      <div class="temp" id="temp">28°C</div>
+      <div class="desc" id="weatherDesc">Light Rain</div>
+      <button class="voice-btn" onclick="speakWeather()">🔊 Voice Report</button>
     </div>
 
-    <!-- 24-Hour Graph -->
-    <div class="chart-box">
-        <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">24-Hour Temp Graph</p>
-        <canvas id="tempChart"></canvas>
+    <!-- Air Quality & Weather Details -->
+    <div class="details-grid">
+      <div class="detail-card">
+        <span>AIR QUALITY</span>
+        <p id="aqi">1 - Good 🌿</p>
+      </div>
+      <div class="detail-card">
+        <span>FEELS LIKE</span>
+        <p id="feelsLike">32°C</p>
+      </div>
+      <div class="detail-card">
+        <span>HUMIDITY</span>
+        <p id="humidity">80%</p>
+      </div>
+      <div class="detail-card">
+        <span>WIND</span>
+        <p id="wind">9.2 km/h</p>
+      </div>
     </div>
 
-    <!-- 5-Day Forecast -->
-    <div class="forecast-box">
-        <p style="font-size: 12px; color: #94a3b8; margin-bottom: 8px;">5-Day Forecast</p>
-        <div id="forecastContainer"></div>
+    <!-- 24 Hour Temp Placeholder Graph -->
+    <div class="section-card">
+      <div class="section-title">24-Hour Temp Graph</div>
+      <div style="text-align: center; padding: 20px 0; color: #38bdf8;">
+        📈 [Graph View Active]
+      </div>
     </div>
-</div>
 
-<script>
-    const API_KEY = "YOUR_OPENWEATHERMAP_API_KEY"; 
-    let currentUnit = "metric"; 
-    let chartInstance = null;
-    let currentCity = "Mumbai";
+    <!-- 5 Day Forecast -->
+    <div class="section-card">
+      <div class="section-title">5-Day Forecast</div>
+      <div class="forecast-row"><span>Mon</span><span>Rain</span><b>28°C</b></div>
+      <div class="forecast-row"><span>Tue</span><span>Clouds</span><b>30°C</b></div>
+      <div class="forecast-row"><span>Wed</span><span>Clear</span><b>32°C</b></div>
+    </div>
+  </div>
 
-    const searchBtn = document.getElementById("searchBtn");
-    const cityInput = document.getElementById("cityInput");
-    const errorMsg = document.getElementById("errorMsg");
-    const voiceBtn = document.getElementById("voiceBtn");
-    const unitBtn = document.getElementById("unitBtn");
-    const gpsBtn = document.getElementById("gpsBtn");
+  <!-- Total Page Views Counter -->
+  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; margin: 20px 0; text-align: center;">
+    <p style="color: #ffffff; margin-bottom: 8px; font-size: 14px;">Total Page Views</p>
+    <img src="https://api.visitorbadge.io/api/visitors?path=live-weather-app-fast.netlify.app&label=Views&countColor=%23263759" alt="Views Counter" />
+  </div>
 
-    // Search Trigger
-    searchBtn.addEventListener("click", () => {
-        const city = cityInput.value.trim();
-        if (city) fetchWeatherData(city);
-    });
+  <!-- Creator Name -->
+  <p style="text-align: center; color: #ffffff; font-size: 14px; margin-top: 10px;">
+    Created by <b>Sangmeshwar Gadage</b>
+  </p>
 
-    cityInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter") {
-            const city = cityInput.value.trim();
-            if (city) fetchWeatherData(city);
-        }
-    });
+  <!-- Action Buttons (Share & Install) -->
+  <div style="display: flex; gap: 10px; justify-content: center; margin: 20px 0;">
+    <button id="shareBtn" onclick="shareWeather()" style="background: #25D366; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+      📤 Share Weather
+    </button>
+    <button id="installBtn" onclick="installApp()" style="background: #0088cc; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+      📲 Install App
+    </button>
+  </div>
 
-    // GPS Trigger
-    gpsBtn.addEventListener("click", () => {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                pos => fetchByCoords(pos.coords.latitude, pos.coords.longitude),
-                err => alert("GPS permission denied.")
-            );
-        }
-    });
-
-    // Unit Toggle
-    unitBtn.addEventListener("click", () => {
-        currentUnit = currentUnit === "metric" ? "imperial" : "metric";
-        fetchWeatherData(currentCity);
-    });
-
-    // Voice Report Trigger (Fallback enabled)
-    voiceBtn.addEventListener("click", () => {
-        const city = document.getElementById("cityName").innerText;
-        const temp = document.getElementById("tempVal").innerText;
-        const desc = document.getElementById("weatherDesc").innerText;
-        const textToSpeak = `Weather report for ${city}. Temperature is ${temp} with ${desc}.`;
-
-        if ('speechSynthesis' in window && window.speechSynthesis) {
-            try {
-                window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(textToSpeak);
-                utterance.lang = "en-US";
-                utterance.rate = 0.9;
-                window.speechSynthesis.speak(utterance);
-            } catch(e) {
-                fallbackVoice(textToSpeak);
-            }
-        } else {
-            fallbackVoice(textToSpeak);
-        }
-    });
-
-    function fallbackVoice(text) {
-        if (window.responsiveVoice) {
-            responsiveVoice.speak(text, "UK English Female");
-        }
-    }
-
-    // Main Weather Fetching
-    async function fetchWeatherData(city) {
-        try {
-            const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=${currentUnit}&appid=${API_KEY}`;
-            const res = await fetch(url);
-            
-            if (!res.ok) throw new Error("City not found");
-            
-            const data = await res.json();
-            
-            errorMsg.style.display = "none";
-            currentCity = data.name;
-            
-            updateUI(data);
-            saveToRecent(data.name);
-            fetchForecast(data.coord.lat, data.coord.lon);
-        } catch (err) {
-            // Smooth Fallback for any city search (Works even without valid API Key)
-            errorMsg.style.display = "none";
-            currentCity = city;
-            loadDemoData(city);
-            saveToRecent(city);
-        }
-    }
-
-    async function fetchByCoords(lat, lon) {
-        try {
-            const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=${currentUnit}&appid=${API_KEY}`;
-            const res = await fetch(url);
-            if (!res.ok) throw new Error("Error");
-            const data = await res.json();
-            
-            errorMsg.style.display = "none";
-            currentCity = data.name;
-            updateUI(data);
-            fetchForecast(lat, lon);
-        } catch (err) {
-            loadDemoData("Your Location");
-        }
-    }
-
-    function updateUI(data) {
-        const unitSymbol = currentUnit === "metric" ? "°C" : "°F";
-        document.getElementById("cityName").innerText = `${data.name}, ${data.sys.country}`;
-        document.getElementById("tempVal").innerText = `${Math.round(data.main.temp)}${unitSymbol}`;
-        document.getElementById("weatherDesc").innerText = data.weather[0].description;
-        document.getElementById("feelsVal").innerText = `${Math.round(data.main.feels_like)}${unitSymbol}`;
-        document.getElementById("humidityVal").innerText = `${data.main.humidity}%`;
-        document.getElementById("windVal").innerText = `${data.wind.speed} km/h`;
-    }
-
-    async function fetchForecast(lat, lon) {
-        try {
-            const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&units=${currentUnit}&appid=${API_KEY}`;
-            const res = await fetch(url);
-            const data = await res.json();
-
-            const hours = data.list.slice(0, 8).map(i => i.dt_txt.split(" ")[1].slice(0, 5));
-            const temps = data.list.slice(0, 8).map(i => Math.round(i.main.temp));
-            renderChart(hours, temps);
-
-            const forecastContainer = document.getElementById("forecastContainer");
-            forecastContainer.innerHTML = "";
-            const dailyData = data.list.filter((_, index) => index % 8 === 0);
-            
-            dailyData.forEach(item => {
-                const date = new Date(item.dt_txt).toLocaleDateString("en-US", { weekday: "short" });
-                const unitSymbol = currentUnit === "metric" ? "°C" : "°F";
-                forecastContainer.innerHTML += `
-                    <div class="forecast-item">
-                        <span>${date}</span>
-                        <span>${item.weather[0].main}</span>
-                        <span><b>${Math.round(item.main.temp)}${unitSymbol}</b></span>
-                    </div>
-                `;
-            });
-        } catch (error) {
-            console.log(error);
-        }
-    }
-
-    function renderChart(labels, data) {
-        const ctx = document.getElementById('tempChart').getContext('2d');
-        if (chartInstance) chartInstance.destroy();
-
-        chartInstance = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: data,
-                    borderColor: '#38bdf8',
-                    backgroundColor: 'rgba(56, 189, 248, 0.2)',
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: {
-                plugins: { legend: { display: false } },
-                scales: { x: { grid: { display: false } }, y: { grid: { color: '#475569' } } }
-            }
-        });
-    }
-
-    function loadDemoData(city) {
-        const unitSymbol = currentUnit === "metric" ? "°C" : "°F";
-        const temp = currentUnit === "metric" ? "28°C" : "82°F";
-        const feels = currentUnit === "metric" ? "32°C" : "90°F";
-
-        document.getElementById("cityName").innerText = `${city.toUpperCase()}, IN`;
-        document.getElementById("tempVal").innerText = temp;
-        document.getElementById("weatherDesc").innerText = "Light Rain";
-        document.getElementById("feelsVal").innerText = feels;
-        document.getElementById("humidityVal").innerText = "80%";
-        document.getElementById("windVal").innerText = "9.2 km/h";
-
-        renderChart(['12:00', '15:00', '18:00', '21:00', '00:00', '03:00'], [28, 29, 27, 26, 25, 24]);
-
-        document.getElementById("forecastContainer").innerHTML = `
-            <div class="forecast-item"><span>Mon</span><span>Rain</span><span><b>28${unitSymbol}</b></span></div>
-            <div class="forecast-item"><span>Tue</span><span>Clouds</span><span><b>30${unitSymbol}</b></span></div>
-            <div class="forecast-item"><span>Wed</span><span>Clear</span><span><b>32${unitSymbol}</b></span></div>
-        `;
-    }
-
-    function saveToRecent(city) {
-        let cities = JSON.parse(localStorage.getItem("recentCities")) || [];
-        if (!cities.includes(city)) {
-            cities.unshift(city);
-            if (cities.length > 4) cities.pop();
-            localStorage.setItem("recentCities", JSON.stringify(cities));
-        }
-        renderRecentCities();
-    }
-
-    function renderRecentCities() {
-        const container = document.getElementById("recentCities");
-        const cities = JSON.parse(localStorage.getItem("recentCities")) || [];
-        container.innerHTML = cities.map(c => `<span class="city-chip" onclick="fetchWeatherData('${c}')">${c}</span>`).join("");
-    }
-
-    window.onload = () => {
-        renderRecentCities();
-        fetchWeatherData("Mumbai");
-    };
-// Share Weather Function
-function shareWeather() {
-  const city = document.getElementById("cityName") ? document.getElementById("cityName").innerText : "my city";
-  const temp = document.getElementById("temp") ? document.getElementById("temp").innerText : "";
-  const shareText = `🌤️ Live Weather Update for ${city}: ${temp}! Check live weather here: ${window.location.href}`;
-
-  if (navigator.share) {
-    navigator.share({
-      title: 'Live Weather App',
-      text: shareText,
-      url: window.location.href,
-    }).catch((error) => console.log('Error sharing:', error));
-  } else {
-    navigator.clipboard.writeText(shareText);
-    alert("Weather details copied to clipboard! You can paste and share it now.");
-  }
-}
-
-// PWA Install App Function
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  const installBtn = document.getElementById('installBtn');
-  if (installBtn) installBtn.style.display = 'flex';
-});
-
-function installApp() {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then((choiceResult) => {
-      if (choiceResult.outcome === 'accepted') {
-        console.log('User accepted the install prompt');
+  <script>
+    // Search City
+    function getWeatherByInput() {
+      const city = document.getElementById("cityInput").value.trim();
+      if (city) {
+        fetchWeatherData(city);
+      } else {
+        alert("Please enter a city name!");
       }
-      deferredPrompt = null;
-      document.getElementById('installBtn').style.display = 'none';
+    }
+
+    // Fetch Weather Mock Function
+    function fetchWeatherData(city) {
+      document.getElementById("cityName").innerText = city.toUpperCase() + ", IN";
+      document.getElementById("temp").innerText = "28°C";
+      document.getElementById("weatherDesc").innerText = "Clear Sky";
+    }
+
+    // Voice Report Function
+    function speakWeather() {
+      const city = document.getElementById("cityName").innerText;
+      const temp = document.getElementById("temp").innerText;
+      const desc = document.getElementById("weatherDesc").innerText;
+      const text = `Current weather in ${city} is ${desc} with a temperature of ${temp}`;
+      
+      const speech = new SpeechSynthesisUtterance(text);
+      window.speechSynthesis.speak(speech);
+    }
+
+    // Share Weather Function
+    function shareWeather() {
+      const city = document.getElementById("cityName").innerText;
+      const temp = document.getElementById("temp").innerText;
+      const shareText = `🌤️ Live Weather Update for ${city}: ${temp}! Check live weather here: ${window.location.href}`;
+
+      if (navigator.share) {
+        navigator.share({ title: 'Live Weather App', text: shareText, url: window.location.href });
+      } else {
+        navigator.clipboard.writeText(shareText);
+        alert("Weather details copied to clipboard!");
+      }
+    }
+
+    // PWA Install App Function
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
     });
-  }
-}
 
-// Share Weather Function
-function shareWeather() {
-  const city = document.getElementById("cityName") ? document.getElementById("cityName").innerText : "my city";
-  const temp = document.getElementById("temp") ? document.getElementById("temp").innerText : "";
-  const shareText = `🌤️ Live Weather Update for ${city}: ${temp}! Check live weather here: ${window.location.href}`;
-
-  if (navigator.share) {
-    navigator.share({
-      title: 'Live Weather App',
-      text: shareText,
-      url: window.location.href,
-    }).catch((error) => console.log('Error sharing:', error));
-  } else {
-    navigator.clipboard.writeText(shareText);
-    alert("Weather details copied to clipboard! You can paste and share it now.");
-  }
-}
-
-// PWA Install App Function
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-});
-
-function installApp() {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then((choiceResult) => {
-      deferredPrompt = null;
-    });
-  } else {
-    alert("इसे इंस्टॉल करने के लिए Chrome के ऊपर 3-dots (⋮) पर क्लिक करें और 'Add to Home screen' या 'Install app' चुनें!");
-  }
-}
-
-</script>
+    function installApp() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+      } else {
+        alert("इसे इंस्टॉल करने के लिए Chrome के 3-dots (⋮) पर क्लिक करें और 'Add to Home screen' या 'Install app' चुनें!");
+      }
+    }
+  </script>
 </body>
 </html>
-
