@@ -1,9 +1,11 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Live Weather App</title>
+  <!-- Chart.js Library for Graph -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -156,14 +158,14 @@
 <body>
 
   <div class="weather-card">
-    <!-- Search Bar -->
+    <!-- Search Box -->
     <div class="search-box">
       <input type="text" id="cityInput" placeholder="Search city...">
       <button onclick="getWeatherByInput()">Search</button>
     </div>
 
-    <!-- Quick Recent Cities -->
-    <div class="quick-cities" id="recentCities">
+    <!-- Quick City Buttons -->
+    <div class="quick-cities">
       <span class="city-badge" onclick="fetchWeatherData('Pune')">Pune</span>
       <span class="city-badge" onclick="fetchWeatherData('Mumbai')">Mumbai</span>
     </div>
@@ -174,7 +176,7 @@
       <button class="action-btn" onclick="toggleTempUnit()">🌡️ °C / °F</button>
     </div>
 
-    <!-- Main Temp Info -->
+    <!-- Main Temp Display -->
     <div class="main-weather">
       <h2 id="cityName">Mumbai, IN</h2>
       <div class="temp" id="temp">28°C</div>
@@ -182,7 +184,7 @@
       <button class="voice-btn" onclick="speakWeather()">🔊 Voice Report</button>
     </div>
 
-    <!-- Air Quality & Weather Details -->
+    <!-- Air & Weather Details -->
     <div class="details-grid">
       <div class="detail-card">
         <span>AIR QUALITY</span>
@@ -202,15 +204,13 @@
       </div>
     </div>
 
-    <!-- 24 Hour Temp Placeholder Graph -->
+    <!-- Live Interactive Chart -->
     <div class="section-card">
       <div class="section-title">24-Hour Temp Graph</div>
-      <div style="text-align: center; padding: 20px 0; color: #38bdf8;">
-        📈 [Graph View Active]
-      </div>
+      <canvas id="tempChart" width="100" height="60"></canvas>
     </div>
 
-    <!-- 5 Day Forecast -->
+    <!-- Forecast -->
     <div class="section-card">
       <div class="section-title">5-Day Forecast</div>
       <div class="forecast-row"><span>Mon</span><span>Rain</span><b>28°C</b></div>
@@ -219,18 +219,18 @@
     </div>
   </div>
 
-  <!-- Total Page Views Counter -->
+  <!-- Page Views Counter -->
   <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; margin: 20px 0; text-align: center;">
     <p style="color: #ffffff; margin-bottom: 8px; font-size: 14px;">Total Page Views</p>
     <img src="https://api.visitorbadge.io/api/visitors?path=live-weather-app-fast.netlify.app&label=Views&countColor=%23263759" alt="Views Counter" />
   </div>
 
-  <!-- Creator Name -->
+  <!-- Creator Credit -->
   <p style="text-align: center; color: #ffffff; font-size: 14px; margin-top: 10px;">
     Created by <b>Sangmeshwar Gadage</b>
   </p>
 
-  <!-- Action Buttons (Share & Install) -->
+  <!-- Share & Install Buttons -->
   <div style="display: flex; gap: 10px; justify-content: center; margin: 20px 0;">
     <button id="shareBtn" onclick="shareWeather()" style="background: #25D366; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px;">
       📤 Share Weather
@@ -241,24 +241,70 @@
   </div>
 
   <script>
-    // Search City
+    let tempChart;
+
+    // Render Canvas Graph
+    function renderChart(temps = [28, 29, 27, 26, 25, 24]) {
+      const ctx = document.getElementById('tempChart').getContext('2d');
+      if (tempChart) tempChart.destroy();
+      
+      tempChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['12:00', '15:00', '18:00', '21:00', '00:00', '03:00'],
+          datasets: [{
+            label: 'Temperature (°C)',
+            data: temps,
+            borderColor: '#38bdf8',
+            backgroundColor: 'rgba(56, 189, 248, 0.2)',
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: '#94a3b8' } },
+            y: { ticks: { color: '#94a3b8' } }
+          }
+        }
+      });
+    }
+
+    window.onload = () => { renderChart(); };
+
+    // Search Input Functionality
     function getWeatherByInput() {
-      const city = document.getElementById("cityInput").value.trim();
-      if (city) {
-        fetchWeatherData(city);
+      const cityInput = document.getElementById("cityInput");
+      if (cityInput && cityInput.value.trim() !== "") {
+        fetchWeatherData(cityInput.value.trim());
       } else {
         alert("Please enter a city name!");
       }
     }
 
-    // Fetch Weather Mock Function
+    // Fetch Weather Logic
     function fetchWeatherData(city) {
       document.getElementById("cityName").innerText = city.toUpperCase() + ", IN";
       document.getElementById("temp").innerText = "28°C";
       document.getElementById("weatherDesc").innerText = "Clear Sky";
+      renderChart([25, 27, 29, 28, 26, 24]);
     }
 
-    // Voice Report Function
+    function getLocationWeather() {
+      fetchWeatherData("Current Location");
+    }
+
+    function toggleTempUnit() {
+      const tempElement = document.getElementById("temp");
+      if (tempElement.innerText.includes("°C")) {
+        tempElement.innerText = "82°F";
+      } else {
+        tempElement.innerText = "28°C";
+      }
+    }
+
+    // Speech synthesis
     function speakWeather() {
       const city = document.getElementById("cityName").innerText;
       const temp = document.getElementById("temp").innerText;
@@ -269,7 +315,7 @@
       window.speechSynthesis.speak(speech);
     }
 
-    // Share Weather Function
+    // Native Share API
     function shareWeather() {
       const city = document.getElementById("cityName").innerText;
       const temp = document.getElementById("temp").innerText;
@@ -283,7 +329,7 @@
       }
     }
 
-    // PWA Install App Function
+    // PWA Install logic
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
@@ -295,7 +341,7 @@
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
       } else {
-        alert("इसे इंस्टॉल करने के लिए Chrome के 3-dots (⋮) पर क्लिक करें और 'Add to Home screen' या 'Install app' चुनें!");
+        alert("इसे इंस्टॉल करने के लिए Chrome के ऊपर 3-dots (⋮) पर क्लिक करें और 'Add to Home screen' या 'Install app' चुनें!");
       }
     }
   </script>
